@@ -19,6 +19,7 @@
     "@apollo/client": "^3.3.21",
     "@apollo/react-hooks": "^4.0.0",
     "@craco/craco": "^6.4.3",
+    "@gitcoinco/passport-sdk-reader": "^0.1.1",
     "@portis/web3": "^4.0.5",
     "@ramp-network/ramp-instant-sdk": "^2.2.0",
     "@testing-library/jest-dom": "^5.11.4",
@@ -45,7 +46,6 @@
     "ipfs-http-client": "^55.0.0",
     "isomorphic-fetch": "^3.0.0",
     "node-watch": "^0.7.1",
-    "postcss": "^8.2.6",
     "qrcode.react": "^1.0.0",
     "react": "^17.0.2",
     "react-blockies": "^1.4.1",
@@ -55,6 +55,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
     "searchico": "^1.2.1",
+    "tulons": "^0.0.4",
     "walletlink": "^2.1.5",
     "web3modal": "^1.9.1"
   },

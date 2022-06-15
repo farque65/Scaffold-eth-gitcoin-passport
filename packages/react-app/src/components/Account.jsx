@@ -5,6 +5,9 @@ import Address from "./Address";
 import Balance from "./Balance";
 import Wallet from "./Wallet";
 
+// -- passport modules
+import { PassportReader } from "@gitcoinco/passport-sdk-reader";
+
 /*
   ~ What it does? ~
 
@@ -61,28 +64,23 @@ export default function Account({
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
       modalButtons.push(
-        <Button
+        <button
+          className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white"
           key="logoutbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
-          size="large"
           onClick={logoutOfWeb3Modal}
         >
           logout
-        </Button>,
+        </button>,
       );
     } else {
       modalButtons.push(
-        <Button
+        <button
+          className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white"
           key="loginbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
-          size="large"
-          /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
           onClick={loadWeb3Modal}
         >
           connect
-        </Button>,
+        </button>,
       );
     }
   }
@@ -93,7 +91,6 @@ export default function Account({
       {web3Modal && web3Modal.cachedProvider ? (
         <>
           {address && <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />}
-          <Balance address={address} provider={localProvider} price={price} />
           <Wallet
             address={address}
             provider={localProvider}
@@ -106,17 +103,13 @@ export default function Account({
       ) : useBurner ? (
         ""
       ) : isContract ? (
-        <>
-          {address && <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />}
-          <Balance address={address} provider={localProvider} price={price} />
-        </>
+        <>{address && <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />}</>
       ) : (
         ""
       )}
       {useBurner && web3Modal && !web3Modal.cachedProvider ? (
         <>
           <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
-          <Balance address={address} provider={localProvider} price={price} />
           <Wallet
             address={address}
             provider={localProvider}

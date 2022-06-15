@@ -1,7 +1,5 @@
 import { Select } from "antd";
-import { useLookupAddress } from "eth-hooks/dapps/ens";
 import React, { useCallback, useState } from "react";
-import QrReader from "react-qr-reader";
 import Blockie from "./Blockie";
 import { ethers } from "ethers";
 import { useMemo } from "react";
