@@ -1,4 +1,6 @@
-# 🏗 Scaffold-ETH
+# 🏗 Scaffold-ETH Gitcoin Passport
+
+> [Deployed to surge](https://best-father.surge.sh/)
 
 > everything you need to build on Ethereum! 🚀
 
