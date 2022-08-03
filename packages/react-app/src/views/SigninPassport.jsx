@@ -14,22 +14,23 @@ import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
 export default function SigninPassport({ address }) {
   const [passport, setPassport] = useState({});
-  const [isPassportConnected, setIsPassportConnected] = useState({});
-  const [passportStreamData, setPassportStreamData] = useState({});
+  const [isPassportConnected, setIsPassportConnected] = useState(false);
 
-  // --- instantiate Passportreader
-  const reader = new PassportReader();
+  // const reader = new PassportReader();
+  // --- instantiate Passportreader to mainnet
+  const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
 
   async function handleConnection() {
-    if (!passportStreamData) {
-      const streamData = await reader.getPassportStream(address);
-      setPassportStreamData(streamData);
-      setIsPassportConnected(true);
-    } else {
-      setPassportStreamData(null);
+    let passportData;
+    if (isPassportConnected) {
+      passportData = {};
       setIsPassportConnected(false);
+    } else {
+      passportData = await reader.getPassportStream(address);
+      setIsPassportConnected(true);
     }
-    setPassport(passportStreamData);
+    setPassport(passportData);
+    console.log("passportData", passportData);
   }
 
   return (
@@ -50,13 +51,13 @@ export default function SigninPassport({ address }) {
               className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white"
               onClick={handleConnection}
             >
-              {isPassportConnected ? "Connect Wallet" : "Disconnect Wallet"}
+              {isPassportConnected ? "Disonnect Wallet" : "Connect Wallet"}
             </button>
           )}
         </div>
 
         {/* <a className="text-white text-xl">Sign in with Passport --></a> */}
-        {passport && (
+        {isPassportConnected && passport && (
           <div className="border-2 p-10 mt-20">
             <h1 className="text-white text-3xl">Passport Data</h1>
             {passport?.expiryDate && (
