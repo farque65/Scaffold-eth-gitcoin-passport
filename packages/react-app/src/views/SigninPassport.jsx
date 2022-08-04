@@ -1,37 +1,10 @@
 import React, { useState } from "react";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
-
-// -- passport modules
-import { PassportReader } from "@gitcoinco/passport-sdk-reader";
-/*
-  Explore Passport SDKs on npm
-  https://github.com/gitcoinco/passport-sdk
-  - @gitcoinco/passport-sdk-reader
-  - @gitcoinco/passport-sdk-scorer
-  - @gitcoinco/passport-sdk-verifier
-  - @gitcoinco/passport-sdk-writer
-*/
+import usePassport from "../hooks/usePassport";
 
 export default function SigninPassport({ address }) {
-  const [passport, setPassport] = useState({});
-  const [isPassportConnected, setIsPassportConnected] = useState(false);
-
-  // const reader = new PassportReader();
-  // --- instantiate Passportreader to mainnet
-  const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
-
-  async function handleConnection() {
-    let passportData;
-    if (isPassportConnected) {
-      passportData = {};
-      setIsPassportConnected(false);
-    } else {
-      passportData = await reader.getPassportStream(address);
-      setIsPassportConnected(true);
-    }
-    setPassport(passportData);
-    console.log("passportData", passportData);
-  }
+  const [passportEnabled, setPassportEnabled] = useState(false);
+  const passport = usePassport(address, passportEnabled);
 
   return (
     <div className="p-10">
@@ -49,15 +22,14 @@ export default function SigninPassport({ address }) {
             <button
               data-testid="connectWalletButton"
               className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white"
-              onClick={handleConnection}
+              onClick={() => setPassportEnabled(!passportEnabled)}
             >
-              {isPassportConnected ? "Disonnect Wallet" : "Connect Wallet"}
+              {passport.active ? "Disconnect Wallet" : `Connect${passportEnabled ? "ing..." : " Wallet"}`}
             </button>
           )}
         </div>
 
-        {/* <a className="text-white text-xl">Sign in with Passport --></a> */}
-        {isPassportConnected && passport && (
+        {passport.active && (
           <div className="border-2 p-10 mt-20">
             <h1 className="text-white text-3xl">Passport Data</h1>
             {passport?.expiryDate && (
@@ -86,7 +58,11 @@ export default function SigninPassport({ address }) {
                   {
                     // @ts-ignore
                     passport?.stamps?.map(item => {
-                      return <li className="text-white">{item.provider}</li>;
+                      return (
+                        <li key={item.provider} className="text-white">
+                          {item.provider}
+                        </li>
+                      );
                     })
                   }
                 </ul>
