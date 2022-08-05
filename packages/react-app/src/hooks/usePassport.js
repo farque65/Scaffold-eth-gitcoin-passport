@@ -2,6 +2,7 @@ import { useEffect, useReducer } from "react";
 
 // -- passport modules
 import { PassportReader } from "@gitcoinco/passport-sdk-reader";
+
 /*
   Explore Passport SDKs on npm
   https://github.com/gitcoinco/passport-sdk
@@ -12,16 +13,35 @@ import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 */
 
 // TODO
-// 1. Direct to passport if none exist yet
+// 1. Direct to passport creation if none exist
 // 2. Add stamp creation
 // 3. Move to a top-level context and let this be sourced throughout app
+// 4. Move weight and threshold setting to contract
+// 5. Set weight and threshold in contract from the frontend
+// 6. Simplify the form code so that it reads more like a spec of usePassport
+
+// By default, each provider contributes
+// towards the score with a weight of 1
+// Adjust here
+const providerWeight = {
+  Twitter: 1.5,
+  Github: 0.8,
+  Ens: 1.2,
+  Discord: 0.3,
+};
+
+// Minimum score to be considered "approved"
+const approvalThreshold = 3;
 
 const defaults = {
   enabled: false,
   active: false,
   verified: false,
-  verifier: undefined,
-  doVerify: undefined,
+  doVerify: false,
+  doScore: false,
+  score: 0,
+  scored: null,
+  approved: false,
 };
 
 function resetPassport() {
@@ -37,7 +57,8 @@ function errorPassport(data) {
 }
 
 function updatePassport(state, action) {
-  const { type, data, verifier } = action;
+  const { type, data, verifier, ScorerClass } = action;
+
   switch (type) {
     case "reset":
       return resetPassport();
@@ -48,13 +69,17 @@ function updatePassport(state, action) {
     case "toggle":
       return setPassport({ ...state, enabled: !state.enabled });
     case "update":
-      return setPassport({ ...state, ...data, active: true });
-    case "setVerifier":
-      return setPassport({ ...state, verifier });
+      return setPassport({ ...state, ...data, enabled: true, active: true });
     case "initVerify":
       return setPassport({ ...state, doVerify: true });
+    case "setVerifier":
+      return setPassport({ ...state, verifier });
     case "verify":
       return setPassport({ ...state, ...data, verified: true });
+    case "initScore":
+      return setPassport({ ...state, doScore: true });
+    case "setScorerClass":
+      return setPassport({ ...state, ScorerClass });
     case "error":
       return errorPassport(data);
     default:
@@ -64,12 +89,28 @@ function updatePassport(state, action) {
 
 export default function usePassport(address) {
   const [passport, dispatch] = useReducer(updatePassport, undefined, resetPassport);
-  const { doVerify, verifier, enabled } = passport;
+  const { doVerify, verifier, enabled, doScore, ScorerClass, stamps } = passport;
 
   const enable = () => dispatch({ type: "enable" });
   const disable = () => dispatch({ type: "disable" });
   const toggle = () => dispatch({ type: "toggle" });
-  const verify = () => dispatch({ type: "initVerify" });
+  const initVerify = () => dispatch({ type: "initVerify" });
+  const initScore = () => dispatch({ type: "initScore" });
+
+  useEffect(() => {
+    const connectOrDisconnect = async () => {
+      if (address && enabled) {
+        const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
+        const data = await reader.getPassport(address);
+        console.log("Passport Data", data);
+        dispatch({ type: "update", data });
+      } else {
+        dispatch({ type: "reset" });
+      }
+    };
+
+    connectOrDisconnect();
+  }, [address, enabled]);
 
   useEffect(() => {
     const initVerifier = async () => {
@@ -89,7 +130,7 @@ export default function usePassport(address) {
 
   useEffect(() => {
     const verifyPassport = async () => {
-      if (verifier && address && enabled && doVerify) {
+      if (verifier && doVerify) {
         const data = await verifier.verifyPassport(address);
         console.log("verify data", data);
 
@@ -100,27 +141,48 @@ export default function usePassport(address) {
             type: "error",
             data: "Failed to verify stamp(s): " + JSON.stringify(failedStamps),
           });
-        else dispatch({ type: "verify", data });
+        else dispatch({ type: "update", data: { verified: true, ...data } });
       }
     };
 
     verifyPassport();
-  }, [verifier, address, enabled, doVerify]);
+  }, [verifier, address, doVerify]);
 
   useEffect(() => {
-    const connectOrDisconnect = async () => {
-      if (address && enabled) {
-        const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
-        const data = await reader.getPassport(address);
-        console.log("Passport Data", data);
-        dispatch({ type: "update", data });
-      } else {
-        dispatch({ type: "reset" });
+    const initScorer = async () => {
+      if (doScore) {
+        // Dynamically load @gitcoinco/passport-sdk-scorer
+        // Required for WASM
+        const PassportScorer = (await import("@gitcoinco/passport-sdk-scorer")).PassportScorer;
+        dispatch({
+          type: "setScorerClass",
+          ScorerClass: PassportScorer,
+        });
       }
     };
 
-    connectOrDisconnect();
-  }, [address, enabled]);
+    initScorer();
+  }, [doScore]);
 
-  return { verify, enable, disable, toggle, ...passport };
+  useEffect(() => {
+    const scorePassport = async () => {
+      if (doScore && ScorerClass) {
+        const scorer = new ScorerClass(
+          stamps.map(stamp => ({
+            provider: stamp.provider,
+            issuer: stamp.credential.issuer,
+            score: providerWeight[stamp.provider] || 1,
+          })),
+        );
+        const score = await scorer.getScore(address);
+        console.log("score", score);
+        const approved = score >= approvalThreshold;
+        dispatch({ type: "update", data: { doScore: false, verified: true, scored: true, score, approved } });
+      }
+    };
+
+    scorePassport();
+  }, [address, stamps, doScore, ScorerClass]);
+
+  return { initVerify, initScore, enable, disable, toggle, ...passport };
 }

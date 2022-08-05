@@ -2167,6 +2167,15 @@
     "@gitcoinco/passport-sdk-types" "^0.1.2"
     tulons "^0.0.6"
 
+"@gitcoinco/passport-sdk-scorer@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-scorer/-/passport-sdk-scorer-0.1.2.tgz#500011e6797405dd3192a656f06eb808e8572088"
+  integrity sha512-/hFzXC/HqX8glMOEcXpErpRlD6jFiZhWDL/d5pn902MK5d+tzqQPkrwAIZLuAjy7hjkJyIb+Dx/oR+rnvN5CHg==
+  dependencies:
+    "@gitcoinco/passport-sdk-reader" "^0.1.2"
+    "@gitcoinco/passport-sdk-types" "^0.1.2"
+    "@gitcoinco/passport-sdk-verifier" "^0.1.2"
+
 "@gitcoinco/passport-sdk-types@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-types/-/passport-sdk-types-0.1.2.tgz#19fe84deaa4774f9616580e95410eb80583bb161"
