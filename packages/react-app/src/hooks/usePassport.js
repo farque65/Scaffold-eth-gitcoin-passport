@@ -30,8 +30,39 @@ const providerWeight = {
   Discord: 0.3,
 };
 
+// Default weight for any unlisted provider
+const defaultWeight = 1;
+
 // Minimum score to be considered "approved"
 const approvalThreshold = 3;
+
+class ScoreComputer {
+  async compute(address, stamps) {
+    const scorer = await this.loadScorer(stamps);
+
+    const score = await scorer.getScore(address);
+
+    const approved = score >= approvalThreshold;
+
+    return { score, approved };
+  }
+
+  async loadScorer(stamps) {
+    // Dynamically load @gitcoinco/passport-sdk-scorer
+    // Required for WASM
+    const PassportScorer = (await import("@gitcoinco/passport-sdk-scorer")).PassportScorer;
+    const stampsArg = this.formatStampsArg(stamps);
+    return new PassportScorer(stampsArg);
+  }
+
+  formatStampsArg(stamps) {
+    return stamps.map(stamp => ({
+      provider: stamp.provider,
+      issuer: stamp.credential.issuer,
+      score: providerWeight[stamp.provider] || defaultWeight,
+    }));
+  }
+}
 
 const defaults = {
   enabled: false,
@@ -72,14 +103,10 @@ function updatePassport(state, action) {
       return setPassport({ ...state, ...data, enabled: true, active: true });
     case "initVerify":
       return setPassport({ ...state, doVerify: true });
-    case "setVerifier":
-      return setPassport({ ...state, verifier });
     case "verify":
       return setPassport({ ...state, ...data, verified: true });
     case "initScore":
       return setPassport({ ...state, doScore: true });
-    case "setScorerClass":
-      return setPassport({ ...state, ScorerClass });
     case "error":
       return errorPassport(data);
     default:
@@ -89,7 +116,7 @@ function updatePassport(state, action) {
 
 export default function usePassport(address) {
   const [passport, dispatch] = useReducer(updatePassport, undefined, resetPassport);
-  const { doVerify, verifier, enabled, doScore, ScorerClass, stamps } = passport;
+  const { doVerify, enabled, doScore, stamps } = passport;
 
   const enable = () => dispatch({ type: "enable" });
   const disable = () => dispatch({ type: "disable" });
@@ -113,24 +140,11 @@ export default function usePassport(address) {
   }, [address, enabled]);
 
   useEffect(() => {
-    const initVerifier = async () => {
-      if (doVerify) {
-        // Dynamically load @gitcoinco/passport-sdk-verifier
-        // Required for WASM
-        const PassportVerifier = (await import("@gitcoinco/passport-sdk-verifier")).PassportVerifier;
-        dispatch({
-          type: "setVerifier",
-          verifier: new PassportVerifier("https://ceramic.passport-iam.gitcoin.co", "1"),
-        });
-      }
-    };
-
-    initVerifier();
-  }, [doVerify]);
-
-  useEffect(() => {
     const verifyPassport = async () => {
-      if (verifier && doVerify) {
+      if (doVerify) {
+        const PassportVerifier = (await import("@gitcoinco/passport-sdk-verifier")).PassportVerifier;
+        const verifier = new PassportVerifier("https://ceramic.passport-iam.gitcoin.co", "1");
+
         const data = await verifier.verifyPassport(address);
         console.log("verify data", data);
 
@@ -146,43 +160,19 @@ export default function usePassport(address) {
     };
 
     verifyPassport();
-  }, [verifier, address, doVerify]);
-
-  useEffect(() => {
-    const initScorer = async () => {
-      if (doScore) {
-        // Dynamically load @gitcoinco/passport-sdk-scorer
-        // Required for WASM
-        const PassportScorer = (await import("@gitcoinco/passport-sdk-scorer")).PassportScorer;
-        dispatch({
-          type: "setScorerClass",
-          ScorerClass: PassportScorer,
-        });
-      }
-    };
-
-    initScorer();
-  }, [doScore]);
+  }, [address, doVerify]);
 
   useEffect(() => {
     const scorePassport = async () => {
-      if (doScore && ScorerClass) {
-        const scorer = new ScorerClass(
-          stamps.map(stamp => ({
-            provider: stamp.provider,
-            issuer: stamp.credential.issuer,
-            score: providerWeight[stamp.provider] || 1,
-          })),
-        );
-        const score = await scorer.getScore(address);
-        console.log("score", score);
-        const approved = score >= approvalThreshold;
+      if (doScore) {
+        if (!stamps) return console.log("Must enable or verify before scoring");
+        const { score, approved } = await new ScoreComputer().compute(address, stamps);
         dispatch({ type: "update", data: { doScore: false, verified: true, scored: true, score, approved } });
       }
     };
 
     scorePassport();
-  }, [address, stamps, doScore, ScorerClass]);
+  }, [address, stamps, doScore]);
 
   return { initVerify, initScore, enable, disable, toggle, ...passport };
 }
