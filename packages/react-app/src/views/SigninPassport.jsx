@@ -1,9 +1,9 @@
 import React from "react";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
-import usePassport from "../hooks/usePassport";
+import { usePassport } from "../hooks/usePassport";
 
 export default function SigninPassport({ address }) {
-  const passport = usePassport(address);
+  const passport = usePassport();
 
   return (
     <div className="p-10">

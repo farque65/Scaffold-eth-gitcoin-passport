@@ -1,6 +1,5 @@
-import { useEffect, useReducer } from "react";
+import React, { useContext, useEffect, useReducer } from "react";
 
-// -- passport modules
 import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
 /*
@@ -14,35 +13,35 @@ import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
 // TODO
 // 1. Direct to passport creation if none exist
-// 2. Add stamp creation
-// 3. Move to a top-level context and let this be sourced throughout app
+// 2. Add stamp creation (somewhat on hold)
+// 3. x - Move to a top-level context and let this be sourced throughout app
 // 4. Move weight and threshold setting to contract
 // 5. Set weight and threshold in contract from the frontend
 // 6. Simplify the form code so that it reads more like a spec of usePassport
 
+const Passport = React.createContext({});
+
 // By default, each provider contributes
 // towards the score with a weight of 1
 // Adjust here
-const providerWeight = {
-  Twitter: 1.5,
-  Github: 0.8,
-  Ens: 1.2,
-  Discord: 0.3,
-};
 
 // Default weight for any unlisted provider
-const defaultWeight = 1;
 
 // Minimum score to be considered "approved"
-const approvalThreshold = 3;
 
 class ScoreComputer {
+  constructor(providerWeightMap, defaultWeight, approvalThreshold) {
+    this.providerWeightMap = providerWeightMap;
+    this.defaultWeight = defaultWeight;
+    this.approvalThreshold = approvalThreshold;
+  }
+
   async compute(address, stamps) {
     const scorer = await this.loadScorer(stamps);
 
     const score = await scorer.getScore(address);
 
-    const approved = score >= approvalThreshold;
+    const approved = score >= this.approvalThreshold;
 
     return { score, approved };
   }
@@ -59,11 +58,13 @@ class ScoreComputer {
     return stamps.map(stamp => ({
       provider: stamp.provider,
       issuer: stamp.credential.issuer,
-      score: providerWeight[stamp.provider] || defaultWeight,
+      score: this.providerWeightMap[stamp.provider] || this.defaultWeight,
     }));
   }
 }
 
+// This object and set of functions allow
+// for consistent state management
 const defaults = {
   enabled: false,
   active: false,
@@ -87,8 +88,9 @@ function errorPassport(data) {
   return { ...defaults, error: data };
 }
 
+// This is the central reducer for passport state
 function updatePassport(state, action) {
-  const { type, data, verifier, ScorerClass } = action;
+  const { type, data } = action;
 
   switch (type) {
     case "reset":
@@ -103,8 +105,6 @@ function updatePassport(state, action) {
       return setPassport({ ...state, ...data, enabled: true, active: true });
     case "initVerify":
       return setPassport({ ...state, doVerify: true });
-    case "verify":
-      return setPassport({ ...state, ...data, verified: true });
     case "initScore":
       return setPassport({ ...state, doScore: true });
     case "error":
@@ -114,7 +114,11 @@ function updatePassport(state, action) {
   }
 }
 
-export default function usePassport(address) {
+// Main logic for the passport
+// Intended to be used internally by the context,
+// but can certainly be called directly to use
+// outside of the context
+function usePassportInternal(address, scoreComputer) {
   const [passport, dispatch] = useReducer(updatePassport, undefined, resetPassport);
   const { doVerify, enabled, doScore, stamps } = passport;
 
@@ -166,13 +170,24 @@ export default function usePassport(address) {
     const scorePassport = async () => {
       if (doScore) {
         if (!stamps) return console.log("Must enable or verify before scoring");
-        const { score, approved } = await new ScoreComputer().compute(address, stamps);
+        const { score, approved } = await scoreComputer.compute(address, stamps);
         dispatch({ type: "update", data: { doScore: false, verified: true, scored: true, score, approved } });
       }
     };
 
     scorePassport();
-  }, [address, stamps, doScore]);
+  }, [address, stamps, doScore, scoreComputer]);
 
   return { initVerify, initScore, enable, disable, toggle, ...passport };
 }
+
+function PassportProvider({ address, providerWeightMap, defaultWeight, approvalThreshold, children }) {
+  const scoreComputer = new ScoreComputer(providerWeightMap, defaultWeight, approvalThreshold);
+  const value = usePassportInternal(address, scoreComputer);
+
+  return <Passport.Provider value={value}>{children}</Passport.Provider>;
+}
+
+const usePassport = () => useContext(Passport);
+
+export { PassportProvider, usePassport, usePassportInternal, ScoreComputer };
