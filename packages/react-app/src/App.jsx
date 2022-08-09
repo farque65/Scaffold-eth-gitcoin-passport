@@ -29,7 +29,7 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { ExampleUI, Hints, SigninPassport } from "./views";
+import { ExampleUI, Hints, SigninPassport, ConfigurePassportScoring } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 import { PassportProvider } from "./hooks/usePassport";
 
@@ -72,6 +72,15 @@ const providers = [
 ];
 
 function App(props) {
+  const [defaultWeight, setDefaultWeight] = useState(1);
+  const [approvalThreshold, setApprovalThreshold] = useState(3);
+  const [providerWeightMap, setProviderWeightMap] = useState({
+    Twitter: 1.5,
+    Github: 0.8,
+    Ens: 1.2,
+    Discord: 0.3,
+  });
+
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
@@ -248,14 +257,9 @@ function App(props) {
   return (
     <PassportProvider
       address={address}
-      providerWeightMap={{
-        Twitter: 1.5,
-        Github: 0.8,
-        Ens: 1.2,
-        Discord: 0.3,
-      }}
-      defaultWeight={1}
-      approvalThreshold={3}
+      providerWeightMap={providerWeightMap}
+      defaultWeight={defaultWeight}
+      approvalThreshold={approvalThreshold}
     >
       <div className="App">
         {/* ✏️ Edit the header and change the title to your project name */}
@@ -271,6 +275,9 @@ function App(props) {
         <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
           <Menu.Item key="/">
             <Link to="/">Sign in with Passport</Link>
+          </Menu.Item>
+          <Menu.Item key="/configure">
+            <Link to="/configure">Configure Passport Scoring</Link>
           </Menu.Item>
           <Menu.Item key="/debug">
             <Link to="/debug">Debug Contracts</Link>
@@ -296,6 +303,16 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               purpose={purpose}
+            />
+          </Route>
+          <Route path="/configure">
+            <ConfigurePassportScoring
+              defaultWeight={defaultWeight}
+              setDefaultWeight={setDefaultWeight}
+              approvalThreshold={approvalThreshold}
+              setApprovalThreshold={setApprovalThreshold}
+              providerWeightMap={providerWeightMap}
+              setProviderWeightMap={setProviderWeightMap}
             />
           </Route>
           <Route exact path="/debug">

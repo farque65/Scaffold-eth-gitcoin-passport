@@ -10,7 +10,7 @@ export default function SigninPassport({ address }) {
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
         */}
-      <div className="border-2 border-solid border-gray-600 mx-auto w-3/4 bg-blue-darkblue text-white p-10">
+      <div className="border-2 pb-28 border-solid border-gray-600 mx-auto w-3/4 bg-blue-darkblue text-white p-10">
         <h2 className="text-white text-xl">Sign in with Passport</h2>
         <div className="mt-10 mb-4 flex items-center font-medium text-gray-900 md:mb-0">
           <img src={GitcoinLogo} alt="Gitcoin Logo White" />
