@@ -33,7 +33,7 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                       }))
                 }
               >
-                {passport.active ? "Disconnect Wallet" : `Connect${passport.busy ? "ing..." : " Wallet"}`}
+                {passport.active ? "Disconnect Wallet" : `Connect${passport.pending === "read" ? "ing..." : " Wallet"}`}
               </button>
               <br />
               <button
@@ -49,12 +49,8 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                 }
               >
                 Verif
-                {passport.verified ? "ied" : passport.busy ? "ing..." : "y"}
+                {passport.verified ? "ied" : passport.pending === "verify" ? "ing..." : "y"}
               </button>
-            </>
-          )}
-          {passport.active && (
-            <>
               <br />
               <button
                 data-testid="scorePassportButton"
@@ -72,7 +68,7 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                 }
               >
                 Scor
-                {passport.scored ? "ed" : passport.busy ? "ing..." : "e"}
+                {passport.scored ? "ed" : passport.pending === "score" ? "ing..." : "e"}
               </button>
             </>
           )}
