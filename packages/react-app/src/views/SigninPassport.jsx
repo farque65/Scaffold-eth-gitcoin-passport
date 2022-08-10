@@ -2,7 +2,7 @@ import React from "react";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
 import { usePassport } from "../hooks/usePassport";
 
-export default function SigninPassport({ address }) {
+export default function SigninPassport({ address, defaultWeight, approvalThreshold, providerWeightMap }) {
   const passport = usePassport();
 
   return (
@@ -22,20 +22,34 @@ export default function SigninPassport({ address }) {
               <button
                 data-testid="connectWalletButton"
                 className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white"
-                onClick={() => passport.toggle()}
+                onClick={() =>
+                  passport &&
+                  address &&
+                  (passport.active
+                    ? passport.disconnect()
+                    : passport.activate({
+                        mode: "read",
+                        address,
+                      }))
+                }
               >
-                {passport.active && passport.enabled
-                  ? "Disconnect Wallet"
-                  : `Connect${passport.enabled ? "ing..." : " Wallet"}`}
+                {passport.active ? "Disconnect Wallet" : `Connect${passport.busy ? "ing..." : " Wallet"}`}
               </button>
               <br />
               <button
                 data-testid="verifyPassportButton"
                 className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white mt-4"
-                onClick={() => passport && passport.initVerify()}
+                onClick={() =>
+                  passport &&
+                  address &&
+                  passport.activate({
+                    mode: "verify",
+                    address,
+                  })
+                }
               >
                 Verif
-                {passport.verified ? "ied" : passport.doVerify ? "ing..." : "y"}
+                {passport.verified ? "ied" : passport.busy ? "ing..." : "y"}
               </button>
             </>
           )}
@@ -45,10 +59,20 @@ export default function SigninPassport({ address }) {
               <button
                 data-testid="scorePassportButton"
                 className="rounded-sm rounded bg-purple-connectPurple py-2 px-10 text-white mt-4"
-                onClick={() => passport && passport.initScore()}
+                onClick={() =>
+                  passport &&
+                  address &&
+                  passport.activate({
+                    mode: "score",
+                    address,
+                    defaultWeight,
+                    providerWeightMap,
+                    approvalThreshold,
+                  })
+                }
               >
                 Scor
-                {passport.scored ? "ed" : passport.doScore ? "ing..." : "e"}
+                {passport.scored ? "ed" : passport.busy ? "ing..." : "e"}
               </button>
             </>
           )}

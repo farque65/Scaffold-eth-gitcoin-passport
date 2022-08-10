@@ -255,12 +255,7 @@ function App(props) {
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   return (
-    <PassportProvider
-      address={address}
-      providerWeightMap={providerWeightMap}
-      defaultWeight={defaultWeight}
-      approvalThreshold={approvalThreshold}
-    >
+    <PassportProvider>
       <div className="App">
         {/* ✏️ Edit the header and change the title to your project name */}
         <Header />
@@ -303,6 +298,9 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               purpose={purpose}
+              providerWeightMap={providerWeightMap}
+              defaultWeight={defaultWeight}
+              approvalThreshold={approvalThreshold}
             />
           </Route>
           <Route path="/configure">

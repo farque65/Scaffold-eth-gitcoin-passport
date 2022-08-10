@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useReducer } from "react";
 
 import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
@@ -66,14 +66,13 @@ class ScoreComputer {
 // This object and set of functions allow
 // for consistent state management
 const defaults = {
-  enabled: false,
+  busy: false,
   active: false,
   verified: false,
-  doVerify: false,
-  doScore: false,
   score: 0,
-  scored: null,
+  scored: false,
   approved: false,
+  error: null,
 };
 
 function resetPassport() {
@@ -85,6 +84,7 @@ function setPassport(data) {
 }
 
 function errorPassport(data) {
+  console.log("usePassport error:", data);
   return { ...defaults, error: data };
 }
 
@@ -95,18 +95,10 @@ function updatePassport(state, action) {
   switch (type) {
     case "reset":
       return resetPassport();
-    case "enable":
-      return setPassport({ ...state, enabled: true });
-    case "disable":
-      return setPassport({ ...state, enabled: false });
-    case "toggle":
-      return setPassport({ ...state, enabled: !state.enabled });
-    case "update":
-      return setPassport({ ...state, ...data, enabled: true, active: true });
-    case "initVerify":
-      return setPassport({ ...state, doVerify: true });
-    case "initScore":
-      return setPassport({ ...state, doScore: true });
+    case "activate":
+      return setPassport({ ...state, ...data, busy: false, active: true });
+    case "busy":
+      return setPassport({ ...state, busy: true });
     case "error":
       return errorPassport(data);
     default:
@@ -118,76 +110,85 @@ function updatePassport(state, action) {
 // Intended to be used internally by the context,
 // but can certainly be called directly to use
 // outside of the context
-function usePassportInternal(address, scoreComputer) {
+function usePassportManager() {
   const [passport, dispatch] = useReducer(updatePassport, undefined, resetPassport);
-  const { doVerify, enabled, doScore, stamps } = passport;
 
-  const enable = () => dispatch({ type: "enable" });
-  const disable = () => dispatch({ type: "disable" });
-  const toggle = () => dispatch({ type: "toggle" });
-  const initVerify = () => dispatch({ type: "initVerify" });
-  const initScore = () => dispatch({ type: "initScore" });
+  const read = useCallback(async address => {
+    const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
+    const data = await reader.getPassport(address);
+    console.log("Passport Data", data);
+    dispatch({ type: "activate", data });
+  }, []);
 
-  useEffect(() => {
-    const connectOrDisconnect = async () => {
-      if (address && enabled) {
-        const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
-        const data = await reader.getPassport(address);
-        console.log("Passport Data", data);
-        dispatch({ type: "update", data });
-      } else {
-        dispatch({ type: "reset" });
+  const verify = useCallback(async address => {
+    const PassportVerifier = (await import("@gitcoinco/passport-sdk-verifier")).PassportVerifier;
+    const verifier = new PassportVerifier("https://ceramic.passport-iam.gitcoin.co", "1");
+
+    const data = await verifier.verifyPassport(address);
+    console.log("verify data", data);
+
+    const failedStamps = data.stamps.filter(stamp => !stamp.verified);
+
+    if (failedStamps.length)
+      return dispatch({
+        type: "error",
+        data: "Failed to verify stamp(s): " + JSON.stringify(failedStamps),
+      });
+    else dispatch({ type: "activate", data: { verified: true, ...data } });
+
+    return data;
+  }, []);
+
+  const score = useCallback(
+    async (address, defaultWeight, approvalThreshold, providerWeightMap) => {
+      if (!defaultWeight || !approvalThreshold)
+        return dispatch({
+          type: "error",
+          data: "Passport scoring requires defaultWeight and approvalThreshold, and optionally a providerWeightMap of {providerName => weight}",
+        });
+      const data = await verify(address);
+      const scoreComputer = new ScoreComputer(providerWeightMap, defaultWeight, approvalThreshold);
+      const { score, approved } = await scoreComputer.compute(address, data.stamps);
+      return dispatch({ type: "activate", data: { ...data, scored: true, verified: true, score, approved } });
+    },
+    [verify],
+  );
+
+  const activate = useCallback(
+    async ({ address, mode, providerWeightMap, defaultWeight, approvalThreshold }) => {
+      dispatch({ type: "busy" });
+      if (!address) return dispatch({ type: "error", data: "Address required to interact with a passport" });
+
+      let passportData;
+      switch (mode) {
+        case "read":
+          passportData = await read(address);
+          break;
+        case "verify":
+          passportData = await verify(address);
+          break;
+        case "score":
+        default:
+          passportData = await score(address, defaultWeight, approvalThreshold, providerWeightMap);
+          break;
       }
-    };
 
-    connectOrDisconnect();
-  }, [address, enabled]);
+      return passportData;
+    },
+    [read, verify, score],
+  );
 
-  useEffect(() => {
-    const verifyPassport = async () => {
-      if (doVerify) {
-        const PassportVerifier = (await import("@gitcoinco/passport-sdk-verifier")).PassportVerifier;
-        const verifier = new PassportVerifier("https://ceramic.passport-iam.gitcoin.co", "1");
+  const disconnect = useCallback(() => dispatch({ type: "reset" }), []);
 
-        const data = await verifier.verifyPassport(address);
-        console.log("verify data", data);
-
-        const failedStamps = data.stamps.filter(stamp => !stamp.verified);
-
-        if (failedStamps.length)
-          dispatch({
-            type: "error",
-            data: "Failed to verify stamp(s): " + JSON.stringify(failedStamps),
-          });
-        else dispatch({ type: "update", data: { verified: true, ...data } });
-      }
-    };
-
-    verifyPassport();
-  }, [address, doVerify]);
-
-  useEffect(() => {
-    const scorePassport = async () => {
-      if (doScore) {
-        if (!stamps) return console.log("Must enable or verify before scoring");
-        const { score, approved } = await scoreComputer.compute(address, stamps);
-        dispatch({ type: "update", data: { doScore: false, verified: true, scored: true, score, approved } });
-      }
-    };
-
-    scorePassport();
-  }, [address, stamps, doScore, scoreComputer]);
-
-  return { initVerify, initScore, enable, disable, toggle, ...passport };
+  return { activate, disconnect, ...passport };
 }
 
-function PassportProvider({ address, providerWeightMap, defaultWeight, approvalThreshold, children }) {
-  const scoreComputer = new ScoreComputer(providerWeightMap, defaultWeight, approvalThreshold);
-  const value = usePassportInternal(address, scoreComputer);
+function PassportProvider({ children }) {
+  const value = usePassportManager();
 
   return <Passport.Provider value={value}>{children}</Passport.Provider>;
 }
 
 const usePassport = () => useContext(Passport);
 
-export { PassportProvider, usePassport, usePassportInternal, ScoreComputer };
+export { PassportProvider, usePassport, usePassportManager };
