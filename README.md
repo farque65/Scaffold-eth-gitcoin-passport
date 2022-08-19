@@ -1,67 +1,18 @@
 # 🏗 Scaffold-ETH Gitcoin Passport
 
-> [Deployed to surge](https://best-father.surge.sh/)
+## About this Branch
+This branch of [Scaffold-Eth](https://github.com/scaffold-eth/scaffold-eth) gives you a jumping off
+point for using [Gitcoin Passports](https://passport.gitcoin.co/) in your dapp. This can also be used
+to simply learn about Passport scoring.
+For your convenience, there is a hosted version [here](https://lucianhymer.github.io/Scaffold-eth-gitcoin-passport).
 
-> everything you need to build on Ethereum! 🚀
+## Hosted Demo
+This app is hosted in GitHub Pages and can be accessed [here](https://lucianhymer.github.io/Scaffold-eth-gitcoin-passport).
+This is a great resource to see how passports and scoring work before cloning this repo to build your dapp.
+Work with the passport on the first tab and configure scoring parameters on the second tab.
 
-🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
+## Reading, Verifying, and Scoring Passports
+TODO
 
-![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
-
-
-# 🏄‍♂️ Quick Start
-
-Prerequisites: [Node](https://nodejs.org/en/download/) plus [Yarn](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads)
-
-> clone/fork 🏗 scaffold-eth:
-
-```bash
-git clone https://github.com/scaffold-eth/scaffold-eth.git
-```
-
-> install and start your 👷‍ Hardhat chain:
-
-```bash
-cd scaffold-eth
-yarn install
-yarn chain
-```
-
-> in a second terminal window, start your 📱 frontend:
-
-```bash
-cd scaffold-eth
-yarn start
-```
-
-> in a third terminal window, 🛰 deploy your contract:
-
-```bash
-cd scaffold-eth
-yarn deploy
-```
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-💼 Edit your deployment scripts in `packages/hardhat/deploy`
-
-📱 Open http://localhost:3000 to see the app
-
-# 💌 P.S.
-
-🌍 You need an RPC key for testnets and production deployments, create an [Alchemy](https://www.alchemy.com/) account and replace the value of `ALCHEMY_KEY = xxx` in `packages/react-app/src/constants.js` with your new key.
-
-# 🏃💨 Speedrun Ethereum
-Register as a builder [here](https://speedrunethereum.com) and start on some of the challenges and build a portfolio.
-
-
-# 💬 Support Chat
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA) to ask questions and find others building with 🏗 scaffold-eth!
-
----
-
-🙏 Please check out our [Gitcoin grant](https://gitcoin.co/grants/2851/scaffold-eth) too!
-
+## Scoring Mechanism
+TODO
