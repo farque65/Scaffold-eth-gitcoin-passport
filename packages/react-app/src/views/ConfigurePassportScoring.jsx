@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Input } from "antd";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
-import { useContractReader } from "eth-hooks";
 
 export default function ConfigurePassportScoring({
   defaultWeight,
@@ -30,8 +29,11 @@ export default function ConfigurePassportScoring({
           <span className="font-miriam-libre ml-3 text-4xl text-white">Settings</span>
         </div>
         <div className="mt-4 mb-4">
-          <h4 className="text-white">Default Weight: {defaultWeight}</h4>
-          <div className="text-xs text-white">Weight to use for any stamp not explicitly included in the mapping</div>
+          <h4 className="text-white text-lg">Default Weight: {defaultWeight}</h4>
+          <div className="text-sm text-white mx-2">
+            Weight to use for any stamp not explicitly included in the mapping
+          </div>
+          <div className="text-xs text-white mx-2">Set to 0 to only count approved stamps towards the score</div>
           <div style={{ margin: 8, maxWidth: "20em" }}>
             <Input onChange={e => setNewDefaultWeight(e.target.value)} value={newDefaultWeight} />
             <Button style={{ marginTop: 8 }} onClick={() => setDefaultWeight(parseFloat(newDefaultWeight))}>
@@ -40,8 +42,8 @@ export default function ConfigurePassportScoring({
           </div>
         </div>
         <div className="mt-4 mb-4">
-          <h4 className="text-white">Approval Threshold: {approvalThreshold}</h4>
-          <div className="text-xs text-white">Threshold of total stamp weight at which user is approved</div>
+          <h4 className="text-white text-lg">Approval Threshold: {approvalThreshold}</h4>
+          <div className="text-sm text-white mx-2">Threshold of total stamp weight at which user is approved</div>
           <div style={{ margin: 8, maxWidth: "20em" }}>
             <Input onChange={e => setNewApprovalThreshold(e.target.value)} value={newApprovalThreshold} />
             <Button style={{ marginTop: 8 }} onClick={() => setApprovalThreshold(parseFloat(newApprovalThreshold))}>
@@ -50,10 +52,11 @@ export default function ConfigurePassportScoring({
           </div>
         </div>
         <div className="mt-4 mb-4">
-          <h4 className="text-white">Provider Weight Map</h4>
-          <div className="text-xs text-white">Explicitly configured weight for each stamp provider</div>
+          <h4 className="text-white text-lg">Provider Weight Map</h4>
+          <div className="text-sm text-white mx-2">Explicitly configured weight for each stamp provider</div>
+          <div className="text-xs text-white mx-2">Add more below, or clear the map and start over.</div>
           <div style={{ margin: 8, maxWidth: "20em" }}>
-            <>
+            {Object.keys(providerWeightMap).length && (
               <table>
                 {Object.keys(providerWeightMap).map(provider => (
                   <tr key={provider}>
@@ -61,7 +64,7 @@ export default function ConfigurePassportScoring({
                   </tr>
                 ))}
               </table>
-            </>
+            )}
             <h5 className="text-white mt-4">Add New Provider Weight</h5>
             <div className="flex flex-row">
               <div className="pr-2 flex flex-row flex-nowrap">Provider:</div>

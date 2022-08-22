@@ -60,7 +60,7 @@ const initialNetwork = NETWORKS.localhost; // <------- select your target fronte
 const DEBUG = true;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = true; // toggle burner wallet feature
-const USE_NETWORK_SELECTOR = false;
+const USE_NETWORK_SELECTOR = true;
 
 const web3Modal = Web3ModalSetup();
 
@@ -72,7 +72,7 @@ const providers = [
 ];
 
 function App(props) {
-  const [defaultWeight, setDefaultWeight] = useState(1);
+  const [defaultWeight, setDefaultWeight] = useState(0);
   const [approvalThreshold, setApprovalThreshold] = useState(3);
   const [providerWeightMap, setProviderWeightMap] = useState({
     Twitter: 1.5,

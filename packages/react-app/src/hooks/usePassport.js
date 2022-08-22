@@ -13,10 +13,10 @@ import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
 // TODO
 // 1. Direct to passport creation if none exist
-// 2. Add stamp creation (somewhat on hold)
+// 2. on hold - Add stamp creation
 // 3. x - Move to a top-level context and let this be sourced throughout app
-// 4. Move weight and threshold setting to contract
-// 5. Set weight and threshold in contract from the frontend
+// 4. x - Make weight and threshold dynamic
+// 5. x - Set weight and threshold from the frontend
 // 6. Simplify the form code so that it reads more like a spec of usePassport
 
 const Passport = React.createContext({});
@@ -65,6 +65,7 @@ const defaults = {
   scored: false,
   approved: false,
   error: null,
+  missing: false,
 };
 
 function resetPassport() {
@@ -75,9 +76,10 @@ function setPassport(data) {
   return { ...defaults, ...data };
 }
 
-function errorPassport(data) {
-  console.log("usePassport error:", data);
-  return { ...defaults, error: data };
+function errorPassport(message, extraData) {
+  console.log("usePassport error:", message, extraData);
+  if (extraData) console.log(extraData);
+  return { ...defaults, ...(extraData || {}), error: message };
 }
 
 // This is the central reducer for passport state
@@ -91,6 +93,8 @@ function updatePassport(state, action) {
       return setPassport({ ...state, ...data, pending: null, active: true });
     case "pending":
       return setPassport({ ...state, pending: data });
+    case "missing":
+      return errorPassport(data, { missing: true });
     case "error":
       return errorPassport(data);
     default:
@@ -106,7 +110,7 @@ function usePassportManager() {
   const [passport, dispatch] = useReducer(updatePassport, undefined, resetPassport);
 
   const reportMissingPassport = () =>
-    dispatch({ type: "error", data: "Unable to retrieve passport, you may need to create one" });
+    dispatch({ type: "missing", data: "Unable to retrieve passport, you may need to create one" });
 
   const read = useCallback(async address => {
     const reader = new PassportReader("https://ceramic.passport-iam.gitcoin.co", "1");
@@ -152,10 +156,10 @@ function usePassportManager() {
 
   const score = useCallback(
     async (address, defaultWeight, approvalThreshold, providerWeightMap) => {
-      if (!defaultWeight || !approvalThreshold)
+      if ((!defaultWeight && defaultWeight !== 0) || !approvalThreshold)
         return dispatch({
           type: "error",
-          data: "Passport scoring requires defaultWeight and approvalThreshold, and optionally a providerWeightMap of {providerName => weight}",
+          data: "Passport scoring requires defaultWeight and non-zero approvalThreshold, and optionally a providerWeightMap of {providerName => weight}",
         });
 
       const data = await getVerificationData(address);
