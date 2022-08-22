@@ -71,15 +71,38 @@ const providers = [
   "https://rpc.scaffoldeth.io:48544",
 ];
 
+const GITCOIN_PASSPORT_ISSUER = "did:key:z6MkghvGHLobLEdj1bgRLhS4LPGJAvbMA1tn2zcRyqmYU5LC";
+const issuer = process.env.ISSUER_DID || GITCOIN_PASSPORT_ISSUER;
+
 function App(props) {
-  const [defaultWeight, setDefaultWeight] = useState(0);
-  const [approvalThreshold, setApprovalThreshold] = useState(3);
-  const [providerWeightMap, setProviderWeightMap] = useState({
-    Twitter: 1.5,
-    Github: 0.8,
-    Ens: 1.2,
-    Discord: 0.3,
-  });
+  const [approvalThreshold, setApprovalThreshold] = useState(1);
+  const [acceptedStamps, setAcceptedStamps] = useState([
+    {
+      provider: "Ens",
+      score: 0.7,
+      issuer,
+    },
+    {
+      provider: "Github",
+      score: 0.5,
+      issuer,
+    },
+    {
+      provider: "Twitter",
+      score: 0.3,
+      issuer,
+    },
+    {
+      provider: "Google",
+      score: 0.5,
+      issuer,
+    },
+    {
+      provider: "POAP",
+      score: 0.5,
+      issuer,
+    },
+  ]);
 
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
@@ -287,30 +310,15 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            <SigninPassport
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              purpose={purpose}
-              providerWeightMap={providerWeightMap}
-              defaultWeight={defaultWeight}
-              approvalThreshold={approvalThreshold}
-            />
+            <SigninPassport address={address} acceptedStamps={acceptedStamps} approvalThreshold={approvalThreshold} />
           </Route>
           <Route path="/configure">
             <ConfigurePassportScoring
-              defaultWeight={defaultWeight}
-              setDefaultWeight={setDefaultWeight}
               approvalThreshold={approvalThreshold}
               setApprovalThreshold={setApprovalThreshold}
-              providerWeightMap={providerWeightMap}
-              setProviderWeightMap={setProviderWeightMap}
+              acceptedStamps={acceptedStamps}
+              setAcceptedStamps={setAcceptedStamps}
+              issuer={issuer}
             />
           </Route>
           <Route exact path="/debug">

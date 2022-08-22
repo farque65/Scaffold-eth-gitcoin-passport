@@ -3,20 +3,18 @@ import { Button, Input } from "antd";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
 
 export default function ConfigurePassportScoring({
-  defaultWeight,
   approvalThreshold,
-  providerWeightMap,
-  setDefaultWeight,
+  acceptedStamps,
   setApprovalThreshold,
-  setProviderWeightMap,
+  setAcceptedStamps,
+  issuer,
 }) {
-  const [newDefaultWeight, setNewDefaultWeight] = useState(defaultWeight);
   const [newApprovalThreshold, setNewApprovalThreshold] = useState(approvalThreshold);
   const [newProvider, setNewProvider] = useState("");
-  const [newWeight, setNewWeight] = useState("");
+  const [newScore, setNewScore] = useState("");
 
   const clearNewEntry = () => {
-    setNewWeight("");
+    setNewScore("");
     setNewProvider("");
   };
 
@@ -29,21 +27,8 @@ export default function ConfigurePassportScoring({
           <span className="font-miriam-libre ml-3 text-4xl text-white">Settings</span>
         </div>
         <div className="mt-4 mb-4">
-          <h4 className="text-white text-lg">Default Weight: {defaultWeight}</h4>
-          <div className="text-sm text-white mx-2">
-            Weight to use for any stamp not explicitly included in the mapping
-          </div>
-          <div className="text-xs text-white mx-2">Set to 0 to only count approved stamps towards the score</div>
-          <div style={{ margin: 8, maxWidth: "20em" }}>
-            <Input onChange={e => setNewDefaultWeight(e.target.value)} value={newDefaultWeight} />
-            <Button style={{ marginTop: 8 }} onClick={() => setDefaultWeight(parseFloat(newDefaultWeight))}>
-              Set
-            </Button>
-          </div>
-        </div>
-        <div className="mt-4 mb-4">
           <h4 className="text-white text-lg">Approval Threshold: {approvalThreshold}</h4>
-          <div className="text-sm text-white mx-2">Threshold of total stamp weight at which user is approved</div>
+          <div className="text-sm text-white mx-2">Threshold of total stamp score at which user is approved</div>
           <div style={{ margin: 8, maxWidth: "20em" }}>
             <Input onChange={e => setNewApprovalThreshold(e.target.value)} value={newApprovalThreshold} />
             <Button style={{ marginTop: 8 }} onClick={() => setApprovalThreshold(parseFloat(newApprovalThreshold))}>
@@ -52,35 +37,57 @@ export default function ConfigurePassportScoring({
           </div>
         </div>
         <div className="mt-4 mb-4">
-          <h4 className="text-white text-lg">Provider Weight Map</h4>
-          <div className="text-sm text-white mx-2">Explicitly configured weight for each stamp provider</div>
-          <div className="text-xs text-white mx-2">Add more below, or clear the map and start over.</div>
+          <h4 className="text-white text-lg">Accepted Stamps</h4>
+          <div className="max-w-lg">
+            <div className="text-sm text-white mx-2">Score for each accepted stamp</div>
+            <div className="text-xs text-white mx-2">
+              Add more (or override) below, or clear the map and start over.
+            </div>
+            <div className="text-xs text-white mx-2 mt-1">
+              Note: By default, the mainnet Gitcoin Passport issuer is used. To override, deploy this dapp locally and
+              set ISSUER_DID in the env
+            </div>
+          </div>
           <div style={{ margin: 8, maxWidth: "20em" }}>
-            {Object.keys(providerWeightMap).length && (
+            {!!acceptedStamps.length && (
               <table>
-                {Object.keys(providerWeightMap).map(provider => (
-                  <tr key={provider}>
-                    <td>Provider: {provider}</td> <td className="pl-6">Weight: {providerWeightMap[provider]}</td>
-                  </tr>
-                ))}
+                <tbody>
+                  {acceptedStamps.map(({ provider, score }) => (
+                    <tr key={provider}>
+                      <td>Provider: {provider}</td>
+                      <td className="pl-6">Score: {score}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             )}
-            <h5 className="text-white mt-4">Add New Provider Weight</h5>
+            <h5 className="text-white mt-4">Add New Provider Score</h5>
             <div className="flex flex-row">
               <div className="pr-2 flex flex-row flex-nowrap">Provider:</div>
               <Input onChange={e => setNewProvider(e.target.value)} value={newProvider} />
             </div>
             <div className="flex flex-row mt-2">
-              <div className="pr-2 flex flex-row flex-nowrap">Weight:</div>
-              <Input onChange={e => setNewWeight(e.target.value)} value={newWeight} />
+              <div className="pr-2 flex flex-row flex-nowrap">Score:</div>
+              <Input onChange={e => setNewScore(e.target.value)} value={newScore} />
             </div>
             <Button
               style={{ marginTop: 8 }}
               onClick={() => {
-                setProviderWeightMap(providerWeightMap => ({
-                  ...providerWeightMap,
-                  [newProvider]: parseFloat(newWeight),
-                }));
+                setAcceptedStamps(acceptedStamps => {
+                  const newStamp = {
+                    provider: newProvider,
+                    score: parseFloat(newScore),
+                    issuer,
+                  };
+
+                  const index = acceptedStamps.findIndex(({ provider }) => provider === newProvider);
+
+                  if (index >= 0) acceptedStamps[index] = newStamp;
+                  else acceptedStamps.push(newStamp);
+
+                  return acceptedStamps;
+                });
+
                 clearNewEntry();
               }}
             >
@@ -90,7 +97,7 @@ export default function ConfigurePassportScoring({
             <Button
               style={{ marginTop: 8 }}
               onClick={() => {
-                setProviderWeightMap({});
+                setAcceptedStamps([]);
                 clearNewEntry();
               }}
             >

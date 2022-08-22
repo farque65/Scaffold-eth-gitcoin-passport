@@ -2,7 +2,7 @@ import React from "react";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
 import { usePassport } from "../hooks/usePassport";
 
-export default function SigninPassport({ address, defaultWeight, approvalThreshold, providerWeightMap }) {
+export default function SigninPassport({ address, approvalThreshold, acceptedStamps }) {
   const passport = usePassport();
 
   return (
@@ -33,7 +33,7 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                       }))
                 }
               >
-                {passport.active ? "Disconnect Wallet" : `Connect${passport.pending === "read" ? "ing..." : " Wallet"}`}
+                {passport.active ? "Disconnect" : `Read${passport.pending === "read" ? "ing..." : ""}`}
               </button>
               <br />
               <button
@@ -48,8 +48,9 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                   })
                 }
               >
-                Verif
-                {passport.verified ? "ied" : passport.pending === "verify" ? "ing..." : "y"}
+                {passport.verified && "Re-"}
+                Verify
+                {passport.pending === "verify" && "ing..."}
               </button>
               <br />
               <button
@@ -61,14 +62,14 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
                   passport.activate({
                     mode: "score",
                     address,
-                    defaultWeight,
-                    providerWeightMap,
+                    acceptedStamps,
                     approvalThreshold,
                   })
                 }
               >
+                {passport.scored && "Re-"}
                 Scor
-                {passport.scored ? "ed" : passport.pending === "score" ? "ing..." : "e"}
+                {passport.pending === "score" ? "ing..." : "e"}
               </button>
             </>
           )}
@@ -85,14 +86,19 @@ export default function SigninPassport({ address, defaultWeight, approvalThresho
             {passport.error}
             {passport.active && (
               <>
+                <p className="font-bold">Verified: {passport.verified ? "✅" : "❌"}</p>
                 {passport.scored && (
-                  <p className="font-bold">
-                    Score:{" "}
-                    {
-                      // @ts-ignore
-                      passport?.score
-                    }
-                  </p>
+                  <>
+                    <p className="font-bold">Score: {passport.score}</p>
+                    <p className="font-bold">Approved: {passport.approved ? "🌟" : "❌"}</p>
+                    {!passport.issuanceDate && (
+                      <div className="max-w-lg">
+                        Scoring alone does not load passport metadata locally.
+                        <br />
+                        Click Re-Verify to fetch additional data
+                      </div>
+                    )}
+                  </>
                 )}
                 {passport?.expiryDate && (
                   <p>
