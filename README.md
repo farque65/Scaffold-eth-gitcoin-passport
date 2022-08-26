@@ -18,15 +18,13 @@ This app is hosted in GitHub Pages and can be accessed [here](https://lucianhyme
 This is a great resource to see how passports and scoring work before cloning this repo to build your dapp.
 Work with the passport on the first tab and configure scoring parameters on the second tab.
 
-## Reading, Verifying, and Scoring Passports with usePassport
-
-### Quick Start
+## Quick Start
 After experimenting with the hosted demo, you can create your own app with Gitcoin Passport in a few simple steps: 
 1. Clone this repo
 2. Set your approvedStamps and approvalThreshold where SinginPassport is created in App.js
 3. Call usePassport to check if the passport is approved wherever needed
 
-Setting stamps and threshold (line 313 in App.js):
+Step 2: Setting stamps and threshold (line 313 in App.js)
 ```
 <SigninPassport
   address={address}
@@ -51,7 +49,7 @@ Setting stamps and threshold (line 313 in App.js):
  />
 ```
 
-Checking approval:
+Step 3: Checking approval
 ```
 function ApprovedOnlyFeature(props){
   const { approved } = usePassport();
@@ -61,6 +59,8 @@ function ApprovedOnlyFeature(props){
   )
 }
 ```
+
+## Reading, Verifying, and Scoring Passports with usePassport
 
 ### Description
 To interact with a Gitcoin Passport, first use the PassportProvider at the top level
