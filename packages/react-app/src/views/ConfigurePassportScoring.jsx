@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { Button, Input } from "antd";
 import GitcoinLogo from "../assets/GitcoinLogoWhite.svg";
 
+// This module allows the user to configure passport scoring
+// This would never be used in production, but instead is
+// here to provide the user a chance to learn about and
+// experiment with Gitcoin Passport scoring
 export default function ConfigurePassportScoring({
   approvalThreshold,
   acceptedStamps,
@@ -29,9 +33,9 @@ export default function ConfigurePassportScoring({
         <div className="mt-4 mb-4">
           <h4 className="text-white text-lg">Approval Threshold: {approvalThreshold}</h4>
           <div className="text-sm text-white mx-2">Threshold of total stamp score at which user is approved</div>
-          <div style={{ margin: 8, maxWidth: "20em" }}>
+          <div className="m-2 max-w-xs">
             <Input onChange={e => setNewApprovalThreshold(e.target.value)} value={newApprovalThreshold} />
-            <Button style={{ marginTop: 8 }} onClick={() => setApprovalThreshold(parseFloat(newApprovalThreshold))}>
+            <Button className="mt-2" onClick={() => setApprovalThreshold(parseFloat(newApprovalThreshold))}>
               Set
             </Button>
           </div>
@@ -43,12 +47,8 @@ export default function ConfigurePassportScoring({
             <div className="text-xs text-white mx-2">
               Add more (or override) below, or clear the map and start over.
             </div>
-            <div className="text-xs text-white mx-2 mt-1">
-              Note: By default, the mainnet Gitcoin Passport issuer is used. To override, deploy this dapp locally and
-              set ISSUER_DID in the env
-            </div>
           </div>
-          <div style={{ margin: 8, maxWidth: "20em" }}>
+          <div className="m-2 max-w-md">
             {!!acceptedStamps.length && (
               <table>
                 <tbody>
@@ -103,6 +103,10 @@ export default function ConfigurePassportScoring({
             >
               Clear Map
             </Button>
+            <div className="text-xs text-white mx-2 mt-4 max-w-lg">
+              Note: By default, the production Gitcoin Passport issuer is used. To override, deploy this dapp locally
+              and set ISSUER_DID in the env. CERAMIC_URL and PASSPORT_NETWORK_ID can also be overridden.
+            </div>
           </div>
         </div>
       </div>
