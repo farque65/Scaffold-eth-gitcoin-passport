@@ -4,7 +4,7 @@ import { PassportReader } from "@gitcoinco/passport-sdk-reader";
 
 /*
  *
- * This module provices access to a
+ * This module provides access to a
  * PassportProvider which should be instantiated
  * at the top of the app, as well as a
  * usePassport hook which provides access
@@ -55,7 +55,7 @@ function resetPassport() {
 }
 
 function setPassport(data) {
-  return { ...defaults, ...data, misssing: null, error: null };
+  return { ...defaults, ...data, missing: null, error: null };
 }
 
 function errorPassport(message, extraData) {
@@ -142,7 +142,7 @@ function usePassportManager() {
     async address => {
       const verifier = await loadVerifier();
 
-      // Verify passport for the given addresss
+      // Verify passport for the given address
       // Returns (e.g.):
       // {
       //   issuanceDate: '2022-08-03T22:30:15.042Z'
@@ -337,13 +337,13 @@ function PassportProvider({ children }) {
 //  // Read unverified Passport data for the given ethereum address
 //  activate({
 //    mode: "read",
-//    address: "0x123sadf123",
+//    address: "0x123asdf123",
 //  });
 //
 //  // Read verified Passport data for the given ethereum address
 //  activate({
 //    mode: "verify",
-//    address: "0x123sadf123",
+//    address: "0x123asdf123",
 //  });
 //
 //  // Score example is shown above.
