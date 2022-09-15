@@ -25,8 +25,8 @@ const Passport = React.createContext({});
 const PROD_GITCOIN_CERAMIC_NODE_URL = "https://ceramic.passport-iam.gitcoin.co";
 const MAINNET_NETWORK_ID = "1";
 
-const ceramic_url = process.env.CERAMIC_URL || PROD_GITCOIN_CERAMIC_NODE_URL;
-const passport_network_id = process.env.PASSPORT_NETWORK_ID || MAINNET_NETWORK_ID;
+const ceramic_url = process.env.REACT_APP_CERAMIC_URL || PROD_GITCOIN_CERAMIC_NODE_URL;
+const passport_network_id = process.env.REACT_APP_PASSPORT_NETWORK_ID || MAINNET_NETWORK_ID;
 
 // This object and set of functions allow
 // for consistent state management
