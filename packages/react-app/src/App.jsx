@@ -72,7 +72,7 @@ const providers = [
 ];
 
 const GITCOIN_PASSPORT_ISSUER = "did:key:z6MkghvGHLobLEdj1bgRLhS4LPGJAvbMA1tn2zcRyqmYU5LC";
-const issuer = process.env.ISSUER_DID || GITCOIN_PASSPORT_ISSUER;
+const issuer = process.env.REACT_APP_ISSUER_DID || GITCOIN_PASSPORT_ISSUER;
 
 function App(props) {
   const [approvalThreshold, setApprovalThreshold] = useState(1);

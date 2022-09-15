@@ -105,7 +105,8 @@ export default function ConfigurePassportScoring({
             </Button>
             <div className="text-xs text-white mx-2 mt-4 max-w-lg">
               Note: By default, the production Gitcoin Passport issuer is used. To override, deploy this dapp locally
-              and set ISSUER_DID in the env. CERAMIC_URL and PASSPORT_NETWORK_ID can also be overridden.
+              and set REACT_APP_ISSUER_DID in the environment. REACT_APP_CERAMIC_URL and REACT_APP_PASSPORT_NETWORK_ID
+              can also be overridden. See .sample.env
             </div>
           </div>
         </div>
