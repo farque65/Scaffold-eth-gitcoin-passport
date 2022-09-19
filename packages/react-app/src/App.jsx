@@ -29,8 +29,9 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { ExampleUI, Hints, SigninPassport } from "./views";
+import { ExampleUI, Hints, SigninPassport, ConfigurePassportScoring } from "./views";
 import { useStaticJsonRPC } from "./hooks";
+import { PassportProvider } from "./hooks/usePassport";
 
 const { ethers } = require("ethers");
 /*
@@ -59,7 +60,7 @@ const initialNetwork = NETWORKS.localhost; // <------- select your target fronte
 const DEBUG = true;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = true; // toggle burner wallet feature
-const USE_NETWORK_SELECTOR = false;
+const USE_NETWORK_SELECTOR = true;
 
 const web3Modal = Web3ModalSetup();
 
@@ -70,7 +71,39 @@ const providers = [
   "https://rpc.scaffoldeth.io:48544",
 ];
 
+const GITCOIN_PASSPORT_ISSUER = "did:key:z6MkghvGHLobLEdj1bgRLhS4LPGJAvbMA1tn2zcRyqmYU5LC";
+const issuer = process.env.REACT_APP_ISSUER_DID || GITCOIN_PASSPORT_ISSUER;
+
 function App(props) {
+  const [approvalThreshold, setApprovalThreshold] = useState(1);
+  const [acceptedStamps, setAcceptedStamps] = useState([
+    {
+      provider: "Ens",
+      score: 0.7,
+      issuer,
+    },
+    {
+      provider: "Github",
+      score: 0.5,
+      issuer,
+    },
+    {
+      provider: "Twitter",
+      score: 0.3,
+      issuer,
+    },
+    {
+      provider: "Google",
+      score: 0.5,
+      issuer,
+    },
+    {
+      provider: "POAP",
+      score: 0.5,
+      issuer,
+    },
+  ]);
+
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
@@ -245,160 +278,163 @@ function App(props) {
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   return (
-    <div className="App">
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      <NetworkDisplay
-        NETWORKCHECK={NETWORKCHECK}
-        localChainId={localChainId}
-        selectedChainId={selectedChainId}
-        targetNetwork={targetNetwork}
-        logoutOfWeb3Modal={logoutOfWeb3Modal}
-        USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
-      />
-      <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
-        <Menu.Item key="/">
-          <Link to="/">Sign in with Passport</Link>
-        </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
-      </Menu>
+    <PassportProvider>
+      <div className="App">
+        {/* ✏️ Edit the header and change the title to your project name */}
+        <Header />
+        <NetworkDisplay
+          NETWORKCHECK={NETWORKCHECK}
+          localChainId={localChainId}
+          selectedChainId={selectedChainId}
+          targetNetwork={targetNetwork}
+          logoutOfWeb3Modal={logoutOfWeb3Modal}
+          USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
+        />
+        <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
+          <Menu.Item key="/">
+            <Link to="/">Sign in with Passport</Link>
+          </Menu.Item>
+          <Menu.Item key="/configure">
+            <Link to="/configure">Configure Passport Scoring</Link>
+          </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link to="/debug">Debug Contracts</Link>
+          </Menu.Item>
+          <Menu.Item key="/hints">
+            <Link to="/hints">Hints</Link>
+          </Menu.Item>
+          <Menu.Item key="/exampleui">
+            <Link to="/exampleui">ExampleUI</Link>
+          </Menu.Item>
+        </Menu>
 
-      <Switch>
-        <Route exact path="/">
-          <SigninPassport
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route exact path="/debug">
-          {/*
+        <Switch>
+          <Route exact path="/">
+            <SigninPassport address={address} acceptedStamps={acceptedStamps} approvalThreshold={approvalThreshold} />
+          </Route>
+          <Route path="/configure">
+            <ConfigurePassportScoring
+              approvalThreshold={approvalThreshold}
+              setApprovalThreshold={setApprovalThreshold}
+              acceptedStamps={acceptedStamps}
+              setAcceptedStamps={setAcceptedStamps}
+              issuer={issuer}
+            />
+          </Route>
+          <Route exact path="/debug">
+            {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
 
-          <Contract
-            name="YourContract"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-      </Switch>
+            <Contract
+              name="YourContract"
+              price={price}
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/hints">
+            <Hints
+              address={address}
+              yourLocalBalance={yourLocalBalance}
+              mainnetProvider={mainnetProvider}
+              price={price}
+            />
+          </Route>
+          <Route path="/exampleui">
+            <ExampleUI
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              purpose={purpose}
+            />
+          </Route>
+        </Switch>
 
-      <ThemeSwitch />
+        <ThemeSwitch />
 
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
-        <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
-          {USE_NETWORK_SELECTOR && (
-            <div style={{ marginRight: 20 }}>
-              <NetworkSwitch
-                networkOptions={networkOptions}
-                selectedNetwork={selectedNetwork}
-                setSelectedNetwork={setSelectedNetwork}
-              />
-            </div>
+        {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
+        <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
+          <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
+            {USE_NETWORK_SELECTOR && (
+              <div style={{ marginRight: 20 }}>
+                <NetworkSwitch
+                  networkOptions={networkOptions}
+                  selectedNetwork={selectedNetwork}
+                  setSelectedNetwork={setSelectedNetwork}
+                />
+              </div>
+            )}
+            <Account
+              useBurner={USE_BURNER_WALLET}
+              address={address}
+              localProvider={localProvider}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              price={price}
+              web3Modal={web3Modal}
+              loadWeb3Modal={loadWeb3Modal}
+              logoutOfWeb3Modal={logoutOfWeb3Modal}
+              blockExplorer={blockExplorer}
+            />
+          </div>
+          {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
+            <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
           )}
-          <Account
-            useBurner={USE_BURNER_WALLET}
-            address={address}
-            localProvider={localProvider}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            price={price}
-            web3Modal={web3Modal}
-            loadWeb3Modal={loadWeb3Modal}
-            logoutOfWeb3Modal={logoutOfWeb3Modal}
-            blockExplorer={blockExplorer}
-          />
         </div>
-        {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-          <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-        )}
+
+        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={8}>
+              <Ramp price={price} address={address} networks={NETWORKS} />
+            </Col>
+
+            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+              <GasGauge gasPrice={gasPrice} />
+            </Col>
+            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                }}
+                size="large"
+                shape="round"
+              >
+                <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                  💬
+                </span>
+                Support
+              </Button>
+            </Col>
+          </Row>
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {
+                /*  if the local provider has a signer, let's show the faucet:  */
+                faucetAvailable ? (
+                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+                ) : (
+                  ""
+                )
+              }
+            </Col>
+          </Row>
+        </div>
       </div>
-
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
-    </div>
+    </PassportProvider>
   );
 }
 

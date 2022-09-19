@@ -2152,12 +2152,36 @@
     "@ethersproject/properties" "^5.4.0"
     "@ethersproject/strings" "^5.4.0"
 
-"@gitcoinco/passport-sdk-reader@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-reader/-/passport-sdk-reader-0.1.1.tgz#d46ef30540416d8139a3586eb43b63c1ff55b108"
-  integrity sha512-7dp8faIW2d+P12KbPlKth0/I6YpLJxnrwSpAkqvS1KM4grMS7+9OGdg5QvjvukUDdQ9/eqbs5Zp6rXXX1gTobw==
+"@gitcoinco/passport-sdk-reader@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-reader/-/passport-sdk-reader-0.1.4.tgz#875ee9cc421c6f93e97fcba6d530b5c1882ce71f"
+  integrity sha512-MRZ+p3ZdBz7/7U7/+3/LnwU4nXMeWGwPWakvPLTXL0ys74jmIrn0b1j2uh0D8EsdstoAnksbO9wEBRED40wHAg==
   dependencies:
-    tulons "^0.0.5"
+    "@gitcoinco/passport-sdk-types" "^0.2.0"
+    tulons "^0.0.7"
+
+"@gitcoinco/passport-sdk-scorer@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-scorer/-/passport-sdk-scorer-0.1.4.tgz#b0d1d93480af627b8dae4148e6ab30cb37ca8bee"
+  integrity sha512-hGPEfi/RB9qnSWkE5jX3qHXB2qbIAnIHgUekCbPhhBrNXPkbHE07oAomcwva3dHxEdWdOwOo+Oc7vEXtjwCE3g==
+  dependencies:
+    "@gitcoinco/passport-sdk-reader" "^0.1.4"
+    "@gitcoinco/passport-sdk-types" "^0.2.0"
+    "@gitcoinco/passport-sdk-verifier" "^0.2.1"
+
+"@gitcoinco/passport-sdk-types@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-types/-/passport-sdk-types-0.2.0.tgz#51be289db9621c84c247fc5f05bcd46196bfe94d"
+  integrity sha512-qS7P4atgeAEfI6VlGcoXr10E6SsKAlHiPNfSyr25HJpnNomi7J0Yy6krscUPiPsn1eCKOFQeC8uDqTdiXXMGLw==
+
+"@gitcoinco/passport-sdk-verifier@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@gitcoinco/passport-sdk-verifier/-/passport-sdk-verifier-0.2.1.tgz#01bb32a47d97ebd55d634b59432c5226b4717ba9"
+  integrity sha512-Wf4EEPSbfzjsEgIyzFd978R6aufveN6cKj427fEuSTH5uM3hb6tJiHimX+4rOPs97wy1BGVyZB+1Uqoz4qoE1g==
+  dependencies:
+    "@gitcoinco/passport-sdk-reader" "^0.1.4"
+    "@gitcoinco/passport-sdk-types" "^0.2.0"
+    "@spruceid/didkit-wasm" "^0.2.1"
 
 "@graphiql/toolkit@^0.3.2":
   version "0.3.2"
@@ -2827,6 +2851,11 @@
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.12.2.tgz#1afad367cb29a2ed8cdd4a3a62701c2821fb578f"
   integrity sha512-d7VS7PxgMosm5NyaiyDJRNID5pK4AWj1l64Dbz0147hJgy5k2C0/ZiKK/9u5c5K+HRUVHmp+RMvGEjGh84oA5Q==
+
+"@spruceid/didkit-wasm@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@spruceid/didkit-wasm/-/didkit-wasm-0.2.1.tgz#c9cb67df962e568414e6d9946f8563056f263abe"
+  integrity sha512-Qi0ZVS2vNA6iVwOzfIdyVQSj1Q88DgV0HyjnQGZ84YsrjaxbCSPwyhZs3TBzUGKwvoyiGCvWohYnL0G3BsPEMQ==
 
 "@surma/rollup-plugin-off-main-thread@^1.1.1":
   version "1.4.2"
@@ -5021,6 +5050,14 @@ axios@^0.25.0:
   integrity sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==
   dependencies:
     follow-redirects "^1.14.7"
+
+axios@^0.27.2:
+  version "0.27.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
+  integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
+  dependencies:
+    follow-redirects "^1.14.9"
+    form-data "^4.0.0"
 
 axobject-query@^2.2.0:
   version "2.2.0"
@@ -10343,7 +10380,7 @@ follow-redirects@^1.0.0, follow-redirects@^1.10.0, follow-redirects@^1.12.1:
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.1.tgz#d9114ded0a1cfdd334e164e6662ad02bfd91ff43"
   integrity sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==
 
-follow-redirects@^1.14.7:
+follow-redirects@^1.14.7, follow-redirects@^1.14.9:
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.1.tgz#0ca6a452306c9b276e4d3127483e29575e207ad5"
   integrity sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==
@@ -21146,10 +21183,12 @@ tulons@^0.0.4:
     hash.js "^1.1.7"
     multiformats "^9.5.8"
 
-tulons@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/tulons/-/tulons-0.0.5.tgz#6ccf99567a69094bf75135d7f54e46e27cf0ab96"
-  integrity sha512-ZQ4OrqtRm3ZVDwh2dg7Jbsd2nVJKqEHd05Y2L0yqzvGdmRH6a+N7Bf5mMBp5LezQ8L1xpOWkzJ03MDCQU3ITIw==
+tulons@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/tulons/-/tulons-0.0.7.tgz#31677402ab51dc51478d375f90df76ea2ca8cbb9"
+  integrity sha512-JyL9Vn4PPG2TTEJS35yqQgAMLd3IX9pFIlbiLmv47HuHTo2F3ihYg2yfMqde4hqGY1nGk77iJ/lvsTbAURJ8rg==
+  dependencies:
+    axios "^0.27.2"
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
